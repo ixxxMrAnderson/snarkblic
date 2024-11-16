@@ -100,8 +100,8 @@ impl CircuitConfig {
     /// A typical recursion config, without zero-knowledge, targeting ~100 bit security.
     pub const fn standard_recursion_config() -> Self {
         Self {
-            num_wires: 2200,
-            num_routed_wires: 2200,
+            num_wires: 600,
+            num_routed_wires: 600,
             num_constants: 2,
             use_base_arithmetic_gate: true,
             security_bits: 100,

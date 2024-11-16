@@ -1,8 +1,8 @@
 use std::alloc::{alloc, Layout};
 use std::collections::{HashSet};
 use std::ffi::CString;
-use std::fs::File;
-use std::io::{BufReader, BufRead};
+use std::fs::{File, OpenOptions};
+use std::io::{self, Write, BufReader, BufRead};
 use std::mem;
 use std::time::{Duration, Instant};
 use lazy_static::lazy_static;
@@ -523,7 +523,7 @@ fn main() -> Result<()> {
                                   2300, 2300, 4300, 1200, 2300, 2300];
                                   
 
-    let str = "test/CR-N-4.qdimacs_";
+    let str = "test/PARITY-N-3.qdimacs_";
     let BDD_str = format!("{}{}", str, "BDD.txt");
     let eval_str = format!("{}{}", str, "eval.txt");
     let CP_str = format!("{}{}", str, "CP.txt");
@@ -585,11 +585,15 @@ fn main() -> Result<()> {
     // println!("out\n");
 
     let data = builder.build::<C>();
-    let constraints: usize = data.common.gates.iter().map(|gate| gate.0.num_constraints()).sum();
     let prove_start = Instant::now();
     let proof = data.prove(pw)?;
     let prove_duration = prove_start.elapsed();
-    println!("Proving time elapsed: {:?}", prove_duration);
+    let mut file = OpenOptions::new()
+    .append(true)  // Enable appending
+    .create(true)  // Create the file if it doesn't exist
+    .open("output.txt")?;
+    writeln!(file, "Name: {:?}", str)?;
+    writeln!(file, "Proving time elapsed: {:?}", prove_duration)?;
     let letters = CString::new("stats.resident").unwrap();
     let p_letters: *const c_char = letters.as_ptr() as *const c_char;
     let layout = Layout::new::<u64>();
@@ -604,15 +608,13 @@ fn main() -> Result<()> {
         let u64_ptr = ptr as *mut u64;
 
         // Print the value stored in the pointer
-        println!("Value at allocated memory: {} MB, #BDD nodes: {}, #BDD proved: {}", *u64_ptr/1024/1024, GLOBAL_BDD_size, GLOBAL_BDD_num);
+        writeln!(file, "Value at allocated memory: {} MB, #BDD nodes: {}, #BDD proved: {}", *u64_ptr/1024/1024, GLOBAL_BDD_size, GLOBAL_BDD_num);
     }
     
-    println!("Constraints number: {}", constraints);
-    println!("Size of proof: {}", mem::size_of_val(&proof));
     let verify_start = Instant::now();
     let ret = data.verify(proof);
     let verify_duration = verify_start.elapsed();
-    println!("Verification time elapsed: {:?}", verify_duration);
+    writeln!(file, "Verification time elapsed: {:?}", verify_duration);
     ret
 }
 

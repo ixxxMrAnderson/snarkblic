@@ -1,0 +1,4 @@
+Name: "test/PARITY-N-3.qdimacs_"
+Proving time elapsed: 100.924131875s
+Value at allocated memory: 2212 MB, #BDD nodes: 88, #BDD proved: 76
+Verification time elapsed: 655.936917ms
